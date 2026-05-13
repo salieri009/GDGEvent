@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-headline: "Bricolage Grotesque", sans-serif;
+  --font-mono: "Space Mono", monospace;
+
+  --color-primary: #FFB347;
+  --color-primary-dark: #e69524;
+  --color-secondary: #B4E1FF;
+  --color-on-surface: #2D2D2D;
+  --color-surface: #FFFDF5;
+  --color-slate-border: #0f172a;
+}
+
+@layer utilities {
+  .geo-shadow {
+    box-shadow: 6px 6px 0px 0px #0f172a;
+  }
+  
+  .geo-shadow-lg {
+    box-shadow: 12px 12px 0px 0px #0f172a;
+  }
+
+  .geo-shadow-blue {
+    box-shadow: 12px 12px 0px 0px #B4E1FF;
+  }
+
+  .shadow-hard {
+    box-shadow: 6px 6px 0px 0px #0f172a;
+  }
+
+  .shadow-hard-blue {
+    box-shadow: 6px 6px 0px 0px #B4E1FF;
+  }
+
+  .shadow-geo {
+    box-shadow: 10px 10px 0px 0px #dadada;
+  }
+
+  .rounded-geo {
+    border-radius: 40px 10px 40px 10px;
+  }
+
+  .rounded-geo-lg {
+    border-radius: 60px 20px 60px 20px;
+  }
+
+  .shadow-inner-heavy {
+    box-shadow: inset 0 2px 15px 0 rgba(0, 0, 0, 0.05);
+  }
+}
+
+body {
+  @apply bg-surface text-on-surface font-sans;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-headline uppercase tracking-tighter;
+}
+
+.pill-badge {
+  @apply px-4 py-1 border-2 border-slate-border rounded-full font-bold text-xs uppercase tracking-widest bg-white;
+}
+
