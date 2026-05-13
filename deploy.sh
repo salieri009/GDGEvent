@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 
-# ── 설정 (배포 전에 수정하세요) ──────────────────────────────────────
-PROJECT_ID="YOUR_GCP_PROJECT_ID"
-REGION="asia-northeast3"          # 서울
-REPO="gdg-repo"
-SUPABASE_URL="https://YOUR_PROJECT.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="YOUR_SERVICE_ROLE_KEY"
+# ── 설정 (환경 변수로 주입) ───────────────────────────────────────────
+: "${PROJECT_ID:?Set PROJECT_ID}"
+: "${SUPABASE_URL:?Set SUPABASE_URL}"
+: "${SUPABASE_SERVICE_ROLE_KEY:?Set SUPABASE_SERVICE_ROLE_KEY}"
+REGION="${REGION:-asia-northeast3}"          # 서울
+REPO="${REPO:-gdg-repo}"
 # ─────────────────────────────────────────────────────────────────────
 
 REGISTRY="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}"
