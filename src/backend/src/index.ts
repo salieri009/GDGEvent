@@ -4,6 +4,7 @@ import { env } from './env.js';
 import { supabaseAdmin } from './supabase.js';
 import { mapPetRow } from './mappers.js';
 import { AdoptionApplicationPayload } from './types.js';
+import { respondSupabaseError } from './errors.js';
 
 const app = express();
 
@@ -22,7 +23,7 @@ app.get('/health', (_req, res) => {
 
 app.get('/api/pets', async (_req, res) => {
   const { data, error } = await supabaseAdmin.from('pets').select('*').order('created_at', { ascending: true });
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) return respondSupabaseError(res, error);
   return res.json((data ?? []).map((row) => mapPetRow(row as unknown as Record<string, unknown>)));
 });
 
@@ -31,10 +32,7 @@ app.get('/api/pets/:id', async (req, res) => {
   if (!id) return res.status(400).json({ error: 'Missing id' });
 
   const { data, error } = await supabaseAdmin.from('pets').select('*').eq('id', id).single();
-  if (error) {
-    if (error.code === 'PGRST116') return res.status(404).json({ error: 'Not found' });
-    return res.status(500).json({ error: error.message });
-  }
+  if (error) return respondSupabaseError(res, error);
   return res.json(mapPetRow(data as unknown as Record<string, unknown>));
 });
 
@@ -51,7 +49,7 @@ app.post('/api/adoption-applications', async (req, res) => {
     promise_given: body.promiseGiven,
   });
 
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) return respondSupabaseError(res, error);
   return res.status(201).json({ ok: true });
 });
 
