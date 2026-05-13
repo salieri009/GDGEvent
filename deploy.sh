@@ -1,17 +1,25 @@
 #!/bin/bash
 set -e
 
-# ── 설정 (배포 전에 수정하세요) ──────────────────────────────────────
-PROJECT_ID="YOUR_GCP_PROJECT_ID"
-REGION="asia-northeast3"          # 서울
-REPO="gdg-repo"
-SUPABASE_URL="https://YOUR_PROJECT.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="YOUR_SERVICE_ROLE_KEY"
+# ── 설정 (환경 변수로 주입) ───────────────────────────────────────────
+: "${PROJECT_ID:?Set PROJECT_ID}"
+: "${SUPABASE_URL:?Set SUPABASE_URL}"
+REGION="${REGION:-asia-northeast3}"          # 서울
+REPO="${REPO:-gdg-repo}"
 # ─────────────────────────────────────────────────────────────────────
 
 REGISTRY="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}"
 API_IMAGE="${REGISTRY}/api"
 WEB_IMAGE="${REGISTRY}/web"
+BACKEND_ENV_VARS="SUPABASE_URL=${SUPABASE_URL},NODE_ENV=production,PORT=4000"
+BACKEND_SECRET_ARGS=()
+
+if [ -n "${SUPABASE_SERVICE_ROLE_KEY_SECRET:-}" ]; then
+  BACKEND_SECRET_ARGS=(--set-secrets "SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY_SECRET}:latest")
+else
+  : "${SUPABASE_SERVICE_ROLE_KEY:?Set SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_ROLE_KEY_SECRET}"
+  BACKEND_ENV_VARS="${BACKEND_ENV_VARS},SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}"
+fi
 
 echo "==> [1/5] Docker 인증"
 gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
@@ -27,7 +35,8 @@ gcloud run deploy api \
   --platform managed \
   --allow-unauthenticated \
   --port 4000 \
-  --set-env-vars "SUPABASE_URL=${SUPABASE_URL},SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY},NODE_ENV=production,PORT=4000" \
+  --set-env-vars "${BACKEND_ENV_VARS}" \
+  "${BACKEND_SECRET_ARGS[@]}" \
   --quiet
 
 BACKEND_URL=$(gcloud run services describe api \

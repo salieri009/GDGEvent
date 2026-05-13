@@ -4,6 +4,7 @@ import { env } from './env.js';
 import { supabaseAdmin } from './supabase.js';
 import { mapPetRow } from './mappers.js';
 import { AdoptionApplicationPayload } from './types.js';
+import { respondSupabaseError } from './errors.js';
 
 const app = express();
 
@@ -24,27 +25,27 @@ app.get('/debug/supabase', async (_req, res) => {
   try {
     // Test basic connection
     const { data, error } = await supabaseAdmin.from('pets').select('count').limit(1);
-    
+
     if (error) {
       console.error('Supabase connection test failed:', error);
-      return res.status(500).json({ 
-        connected: false, 
+      return res.status(500).json({
+        connected: false,
         error: error.message,
         details: error,
         supabaseUrl: env.SUPABASE_URL ? 'Set' : 'Not set',
         serviceKey: env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Not set'
       });
     }
-    
-    return res.json({ 
-      connected: true, 
+
+    return res.json({
+      connected: true,
       supabaseUrl: env.SUPABASE_URL ? 'Set' : 'Not set',
       serviceKey: env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Not set'
     });
   } catch (err) {
     console.error('Unexpected error in supabase debug:', err);
-    return res.status(500).json({ 
-      connected: false, 
+    return res.status(500).json({
+      connected: false,
       error: 'Unexpected error',
       details: err instanceof Error ? err.message : 'Unknown error',
       supabaseUrl: env.SUPABASE_URL ? 'Set' : 'Not set',
@@ -56,14 +57,11 @@ app.get('/debug/supabase', async (_req, res) => {
 app.get('/api/pets', async (_req, res) => {
   try {
     const { data, error } = await supabaseAdmin.from('pets').select('*').order('created_at', { ascending: true });
-    if (error) {
-      console.error('Supabase error in /api/pets:', error);
-      return res.status(500).json({ error: error.message, details: error });
-    }
+    if (error) return respondSupabaseError(res, error);
     return res.json((data ?? []).map((row) => mapPetRow(row as unknown as Record<string, unknown>)));
   } catch (err) {
     console.error('Unexpected error in /api/pets:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err instanceof Error ? err.message : 'Unknown error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -73,15 +71,11 @@ app.get('/api/pets/:id', async (req, res) => {
     if (!id) return res.status(400).json({ error: 'Missing id' });
 
     const { data, error } = await supabaseAdmin.from('pets').select('*').eq('id', id).single();
-    if (error) {
-      console.error(`Supabase error in /api/pets/${id}:`, error);
-      if (error.code === 'PGRST116') return res.status(404).json({ error: 'Not found' });
-      return res.status(500).json({ error: error.message, details: error });
-    }
+    if (error) return respondSupabaseError(res, error);
     return res.json(mapPetRow(data as unknown as Record<string, unknown>));
   } catch (err) {
-    console.error(`Unexpected error in /api/pets/${req.params.id}:`, err);
-    return res.status(500).json({ error: 'Internal server error', details: err instanceof Error ? err.message : 'Unknown error' });
+    console.error('Unexpected error in /api/pets/:id endpoint', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -99,14 +93,11 @@ app.post('/api/adoption-applications', async (req, res) => {
       promise_given: body.promiseGiven,
     });
 
-    if (error) {
-      console.error('Supabase error in /api/adoption-applications:', error);
-      return res.status(500).json({ error: error.message, details: error });
-    }
+    if (error) return respondSupabaseError(res, error);
     return res.status(201).json({ ok: true });
   } catch (err) {
     console.error('Unexpected error in /api/adoption-applications:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err instanceof Error ? err.message : 'Unknown error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -114,4 +105,3 @@ app.listen(env.PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`API listening on :${env.PORT}`);
 });
-

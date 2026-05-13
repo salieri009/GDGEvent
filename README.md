@@ -98,3 +98,11 @@ docker compose up --build
 ## Database
 
 Apply `src/backend/supabase/schema.sql` in the Supabase SQL editor to create tables, RLS policies, and seed pets.
+
+### Error: `Could not find the table 'public.pets' in the schema cache`
+
+That message comes from PostgREST (Supabase API), not from Express routing. It means the Postgres database behind `SUPABASE_URL` does **not** have `public.pets` yet (or Cloud Run is pointed at the wrong Supabase project).
+
+1. In Supabase Dashboard → **SQL** → paste and run `src/backend/supabase/schema.sql`.
+2. In Google Cloud Run → service **Environment variables** → confirm `SUPABASE_URL` is that project’s URL (Settings → API) and `SUPABASE_SERVICE_ROLE_KEY` is from the same project.
+3. Redeploy if you changed env vars, then `GET /api/pets` again.
