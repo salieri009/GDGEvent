@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, FormEvent } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { petService, adoptionService } from '../services/api';
 import { Pet } from '../types';
@@ -9,6 +9,11 @@ export default function Adopt() {
   const [pet, setPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [applicantName, setApplicantName] = useState('');
+  const [favoriteSnack, setFavoriteSnack] = useState('');
+  const [promiseGiven, setPromiseGiven] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,10 +25,26 @@ export default function Adopt() {
     }
   }, [id]);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => navigate('/pets'), 3000);
+    if (!pet) return;
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      await adoptionService.submit({
+        petId: pet.id,
+        applicantName,
+        favoriteSnack,
+        promiseGiven,
+      });
+      setSubmitted(true);
+      setTimeout(() => navigate('/pets'), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) return <div className="p-48 text-center font-black text-4xl uppercase animate-pulse">Printing papers...</div>;
@@ -54,6 +75,11 @@ export default function Adopt() {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-12">
+          {error ? (
+            <div className="bg-red-50 border-4 border-slate-border rounded-2xl p-6 font-bold text-red-700">
+              {error}
+            </div>
+          ) : null}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-3">
               <label className="block text-xs font-black uppercase tracking-[0.2em] text-slate-400" htmlFor="name">Your Legal Name</label>
@@ -63,6 +89,8 @@ export default function Adopt() {
                 id="name" 
                 placeholder="Full Name"
                 className="w-full bg-slate-50 border-4 border-slate-border p-5 font-bold text-xl rounded-2xl focus:outline-none focus:bg-white transition-colors placeholder:text-slate-200"
+                value={applicantName}
+                onChange={(e) => setApplicantName(e.target.value)}
               />
             </div>
 
@@ -74,6 +102,8 @@ export default function Adopt() {
                 id="snack" 
                 placeholder="Cheese? Bacon?"
                 className="w-full bg-slate-50 border-4 border-slate-border p-5 font-bold text-xl rounded-2xl focus:outline-none focus:bg-white transition-colors placeholder:text-slate-200"
+                value={favoriteSnack}
+                onChange={(e) => setFavoriteSnack(e.target.value)}
               />
             </div>
           </div>
@@ -86,6 +116,8 @@ export default function Adopt() {
                 required 
                 id="promise" 
                 className="w-10 h-10 border-4 border-slate-border rounded-lg checked:bg-primary accent-primary cursor-pointer" 
+                checked={promiseGiven}
+                onChange={(e) => setPromiseGiven(e.target.checked)}
               />
               <label htmlFor="promise" className="text-xl font-bold cursor-pointer select-none leading-tight">
                 I promise to give {pet.name} belly rubs and unlimited ear scratches.
@@ -97,9 +129,10 @@ export default function Adopt() {
              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest max-w-[200px]">By clicking submit, you agree to become a professional ball thrower.</p>
              <button 
                 type="submit"
+                disabled={submitting}
                 className="group relative flex items-center gap-4 bg-primary border-4 border-slate-border px-12 py-6 text-2xl font-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all rounded-2xl shadow-hard uppercase tracking-tighter italic text-white"
               >
-                Send it!
+                {submitting ? 'Sending...' : 'Send it!'}
                 <ArrowRight size={32} className="group-hover:translate-x-2 transition-transform stroke-[3]" />
               </button>
           </div>
