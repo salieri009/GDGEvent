@@ -1,0 +1,12 @@
+{
+  "name": "gdg",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix src/frontend run dev",
+    "build": "npm --prefix src/frontend run build",
+    "lint": "npm --prefix src/frontend run lint",
+    "dev:api": "npm --prefix src/backend run dev",
+    "lint:api": "npm --prefix src/backend run lint",
+    "build:api": "npm --prefix src/backend run build"
+  }
+}

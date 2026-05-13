@@ -1,0 +1,54 @@
+[
+  {
+    "id": "buster",
+    "name": "Buster",
+    "quote": "Very Wiggly",
+    "description": "Buster is a professional shoe-stealer and champion tail-wagger. He enjoys chasing things that don't exist and barking at his own reflection in the water bowl.",
+    "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuB8InHcQ2rc65IVAtvNwa0KJdFCMFwAQYsHmsLvFw8QDm9JDl669FKCAD7F7Paa3Wt51Q72yVF2a8J6dyVvyW08blLmrXsPHAI9GO_uyUhlYwf5l68rd9yMLTL5mcnEqGnfjXWgQctHmPC1S6bLuT01G2jlBHI-KVzHZXoyMK4hpi6_5tVUzaxeZDZd4Rd0rbL479x9sE6R6tXl8OF_u6tkNq2I3ShHdwPitWECFMEAa4ZWCVZpOlgxjgJPEgBmNMOLALvY9_6VS3CK",
+    "age": "3 Years Old (approx)",
+    "breed": "Golden-ish Retriever",
+    "likes": ["Shoes", "Dirt", "Air"],
+    "tags": ["Big Ears", "Very Wiggly"],
+    "status": "available",
+    "refId": "DOG-001-MSPAINT"
+  },
+  {
+    "id": "luna",
+    "name": "Luna",
+    "quote": "Expert Napper",
+    "description": "Luna can sleep through a thunderstorm but will wake up if a single cracker is touched three rooms away.",
+    "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuDxsh8FnBpTFR91RnYLwL1Q-36u26UsHxFpadhKvPuUcUtASwxeUMDoPovbh7cqnn8gQIRvsMzjIytl5DTnjkbkPmTFBDJKYDAu3Z5UYr_VgnSt9TEWQ5QEHJLcbv6zCwMFamjZDQx32bT1rer0TefU6wCF92ZHClHdbhLkBTOUskrnZRpIsAlW39tNiUja173IwZTSlZ4pdGPVkm4u9MjHeGFDiPWIsu8BItLKTnGUDfmh2EJE3jDx3VzXmJrcdYEpK6S_tb6Nr4Z0",
+    "age": "2 Years Old",
+    "breed": "Cloud Terrier",
+    "likes": ["Naptime", "Crackers", "Soft Blankets"],
+    "tags": ["Expert Napper", "Small"],
+    "status": "available",
+    "refId": "DOG-002-SOFT"
+  },
+  {
+    "id": "cloud",
+    "name": "Cloud",
+    "quote": "Loves Socks",
+    "description": "Mostly fluff, 100% chaos. Cloud is a white ball of energy that somehow always finds the muddiest puddle.",
+    "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuAHVJ1b_X4zeIAbO5_w1ZmKbnvnS8kzg63sc_sST7RWMJ3J6o1Etw-ghmjURTyjX5oBdAKZWkJpfiVa2Sq-bWMhZZhULkGYJIukT_kkt_S0mCs3rqXMMeW8NJNHMy6I5w2wSClu8JyvLXUylGzGPJ8uzekUuxvH8qTfrli4G_PdMu7XZYUI8I30XfAR_lnNpFSTUsp3_czvlefmC25PQaoN4S-617vIt3j1AUTZgBR1AWChVGN5c8vxZ83GTRyPpJVO5CS5vNofAuYr",
+    "age": "1 Year Old",
+    "breed": "Bichon-esque Samoyed",
+    "likes": ["Socks", "Mud", "Zoomies"],
+    "tags": ["Chaos", "Fluffy"],
+    "status": "available",
+    "refId": "DOG-003-FLUFF"
+  },
+  {
+    "id": "daisy",
+    "name": "Daisy",
+    "quote": "Gentle Soul",
+    "description": "Daisy is the kind of dog who will sit on your foot just to make sure you're still there. She is terrified of toasters but loves vacuum cleaners.",
+    "imageUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuAbGW5dzX78d5rRmSDOllkHcZOJGp0K3D5LL71OWpJWFcxPnL-21UceC_xRj4MTNrX4MbbG1bDos105WesXEX_CP3go1BudhYPZkI6P9dvS9RanXeX30vLgzApPsNYSSvR_YGmh6KkITUbkxw94vw1hsolRoqQqnE8rSotFbZL7FY-daVPqo1mD9vLehLsrENAocNuqHmT2lCNNrOUDlNpJdASidKdudn5Wf-QjpkeHoCD9-KJZdgq1J3Mg7JYc-53CO_5xgSXb2Uk9",
+    "age": "5 Years Old",
+    "breed": "Golden Retriever (Mostly)",
+    "likes": ["Feet", "Vacuums", "Quiet Moments"],
+    "tags": ["Sweet Soul", "Gentle"],
+    "status": "available",
+    "refId": "DOG-004-GOLD"
+  }
+]
