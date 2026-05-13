@@ -20,39 +20,94 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/debug/supabase', async (_req, res) => {
+  try {
+    // Test basic connection
+    const { data, error } = await supabaseAdmin.from('pets').select('count').limit(1);
+    
+    if (error) {
+      console.error('Supabase connection test failed:', error);
+      return res.status(500).json({ 
+        connected: false, 
+        error: error.message,
+        details: error,
+        supabaseUrl: env.SUPABASE_URL ? 'Set' : 'Not set',
+        serviceKey: env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Not set'
+      });
+    }
+    
+    return res.json({ 
+      connected: true, 
+      supabaseUrl: env.SUPABASE_URL ? 'Set' : 'Not set',
+      serviceKey: env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Not set'
+    });
+  } catch (err) {
+    console.error('Unexpected error in supabase debug:', err);
+    return res.status(500).json({ 
+      connected: false, 
+      error: 'Unexpected error',
+      details: err instanceof Error ? err.message : 'Unknown error',
+      supabaseUrl: env.SUPABASE_URL ? 'Set' : 'Not set',
+      serviceKey: env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Not set'
+    });
+  }
+});
+
 app.get('/api/pets', async (_req, res) => {
-  const { data, error } = await supabaseAdmin.from('pets').select('*').order('created_at', { ascending: true });
-  if (error) return res.status(500).json({ error: error.message });
-  return res.json((data ?? []).map((row) => mapPetRow(row as unknown as Record<string, unknown>)));
+  try {
+    const { data, error } = await supabaseAdmin.from('pets').select('*').order('created_at', { ascending: true });
+    if (error) {
+      console.error('Supabase error in /api/pets:', error);
+      return res.status(500).json({ error: error.message, details: error });
+    }
+    return res.json((data ?? []).map((row) => mapPetRow(row as unknown as Record<string, unknown>)));
+  } catch (err) {
+    console.error('Unexpected error in /api/pets:', err);
+    return res.status(500).json({ error: 'Internal server error', details: err instanceof Error ? err.message : 'Unknown error' });
+  }
 });
 
 app.get('/api/pets/:id', async (req, res) => {
-  const id = req.params.id;
-  if (!id) return res.status(400).json({ error: 'Missing id' });
+  try {
+    const id = req.params.id;
+    if (!id) return res.status(400).json({ error: 'Missing id' });
 
-  const { data, error } = await supabaseAdmin.from('pets').select('*').eq('id', id).single();
-  if (error) {
-    if (error.code === 'PGRST116') return res.status(404).json({ error: 'Not found' });
-    return res.status(500).json({ error: error.message });
+    const { data, error } = await supabaseAdmin.from('pets').select('*').eq('id', id).single();
+    if (error) {
+      console.error(`Supabase error in /api/pets/${id}:`, error);
+      if (error.code === 'PGRST116') return res.status(404).json({ error: 'Not found' });
+      return res.status(500).json({ error: error.message, details: error });
+    }
+    return res.json(mapPetRow(data as unknown as Record<string, unknown>));
+  } catch (err) {
+    console.error(`Unexpected error in /api/pets/${req.params.id}:`, err);
+    return res.status(500).json({ error: 'Internal server error', details: err instanceof Error ? err.message : 'Unknown error' });
   }
-  return res.json(mapPetRow(data as unknown as Record<string, unknown>));
 });
 
 app.post('/api/adoption-applications', async (req, res) => {
-  const body = req.body as Partial<AdoptionApplicationPayload>;
-  if (!body?.petId || !body.applicantName || !body.favoriteSnack || body.promiseGiven !== true) {
-    return res.status(400).json({ error: 'Invalid payload' });
+  try {
+    const body = req.body as Partial<AdoptionApplicationPayload>;
+    if (!body?.petId || !body.applicantName || !body.favoriteSnack || body.promiseGiven !== true) {
+      return res.status(400).json({ error: 'Invalid payload' });
+    }
+
+    const { error } = await supabaseAdmin.from('adoption_applications').insert({
+      pet_id: body.petId,
+      applicant_name: body.applicantName,
+      favorite_snack: body.favoriteSnack,
+      promise_given: body.promiseGiven,
+    });
+
+    if (error) {
+      console.error('Supabase error in /api/adoption-applications:', error);
+      return res.status(500).json({ error: error.message, details: error });
+    }
+    return res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error('Unexpected error in /api/adoption-applications:', err);
+    return res.status(500).json({ error: 'Internal server error', details: err instanceof Error ? err.message : 'Unknown error' });
   }
-
-  const { error } = await supabaseAdmin.from('adoption_applications').insert({
-    pet_id: body.petId,
-    applicant_name: body.applicantName,
-    favorite_snack: body.favoriteSnack,
-    promise_given: body.promiseGiven,
-  });
-
-  if (error) return res.status(500).json({ error: error.message });
-  return res.status(201).json({ ok: true });
 });
 
 app.listen(env.PORT, () => {
