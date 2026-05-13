@@ -74,7 +74,7 @@ app.get('/api/pets/:id', async (req, res) => {
     if (error) return respondSupabaseError(res, error);
     return res.json(mapPetRow(data as unknown as Record<string, unknown>));
   } catch (err) {
-    console.error(`Unexpected error in /api/pets/${req.params.id}:`, err);
+    console.error('Unexpected error in /api/pets/:id', { id: req.params.id }, err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
