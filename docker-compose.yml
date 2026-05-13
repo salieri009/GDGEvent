@@ -20,6 +20,8 @@ services:
     build:
       context: ./src/frontend
       dockerfile: Dockerfile
+    environment:
+      BACKEND_URL: "https://api-370881726058.asia-northeast3.run.app"
     depends_on:
       api:
         condition: service_healthy

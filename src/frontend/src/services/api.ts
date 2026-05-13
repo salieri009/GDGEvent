@@ -1,6 +1,8 @@
 import { Pet } from '../types';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
+// Use absolute URL for production, relative for development
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 
+  (import.meta.env.PROD ? 'https://api-370881726058.asia-northeast3.run.app' : '');
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
