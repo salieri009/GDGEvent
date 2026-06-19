@@ -1,0 +1,32 @@
+---
+description: DoodlePaws Express BFF and Supabase backend conventions
+globs: src/backend/**/*.ts
+alwaysApply: false
+---
+
+# DoodlePaws Backend API
+
+## Architecture
+
+- Browser never receives `SUPABASE_SERVICE_ROLE_KEY`
+- All DB access goes through Express BFF in `src/backend/src/index.ts`
+- Map DB rows via `mappers.ts`; shared types in `types.ts`
+
+## Security
+
+- Require `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` via `env.ts`
+- Production CORS: deny all unless `CORS_ORIGIN` is set
+- Sanitize 500 responses — log details server-side only (`errors.ts`)
+- Validate adoption POST: trim fields, max 200 chars, `petId` pattern `[a-z0-9-]+`
+- Verify pet exists and `status === 'available'` before insert
+- Rate limit adoption POST: 10 req/IP/min (in-memory)
+
+## Error mapping
+
+- `PGRST116` → 404 `{ error: "Not found" }`
+- Missing schema → 503 with setup hint
+- Other DB errors → 500 `{ error: "Internal server error" }`
+
+## When changing endpoints
+
+Update `docs/apiSpec.md` and `docs/techspec.md` in the same PR.

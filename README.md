@@ -106,3 +106,19 @@ That message comes from PostgREST (Supabase API), not from Express routing. It m
 1. In Supabase Dashboard → **SQL** → paste and run `src/backend/supabase/schema.sql`.
 2. In Google Cloud Run → service **Environment variables** → confirm `SUPABASE_URL` is that project’s URL (Settings → API) and `SUPABASE_SERVICE_ROLE_KEY` is from the same project.
 3. Redeploy if you changed env vars, then `GET /api/pets` again.
+
+## Documentation
+
+**Doc pack index**: [docs/README.md](docs/README.md) — terminology, sync rules, v1 constants
+
+| # | Doc |
+|---|-----|
+| 1 | [PRD](docs/PRD.md) |
+| 2 | [SRS](docs/SRS.md) |
+| 3 | [Architecture C4](docs/architecture/c4.md) |
+| 4 | [API — OpenAPI](docs/openapi.yaml) · [Summary](docs/apiSpec.md) |
+| 5 | [ERD](docs/architecture/erd.md) |
+| 6 | [User flows](docs/ux-ui-flows/user-flows.md) |
+| 7 | [TDD](docs/TDD.md) |
+
+Also: [alignment review](docs/dev-readiness-review.md) · [techspec](docs/techspec.md) · [UX rules](docs/ux-ui-flows/ux-ui-rules.md)

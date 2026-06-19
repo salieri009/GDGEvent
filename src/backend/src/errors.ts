@@ -23,5 +23,7 @@ export function respondSupabaseError(res: Response, error: PostgrestError) {
     });
   }
 
-  return res.status(500).json({ error: msg, code: error.code });
+  // eslint-disable-next-line no-console
+  console.error('[supabase]', error.code, msg);
+  return res.status(500).json({ error: 'Internal server error' });
 }

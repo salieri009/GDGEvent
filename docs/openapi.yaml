@@ -1,0 +1,284 @@
+openapi: 3.1.0
+info:
+  title: DoodlePaws API
+  version: 1.0.0
+  description: |
+    Express BFF for pet catalog and adoption applications.
+    Human summary and sync rules — see docs/apiSpec.md and docs/README.md.
+    Requirement IDs — see docs/SRS.md.
+  license:
+    name: Apache-2.0
+
+servers:
+  - url: http://localhost:4000
+    description: Local backend
+  - url: http://localhost:8080
+    description: Docker nginx (proxied to backend)
+  - url: /
+    description: Relative (frontend dev/prod proxy)
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      tags: [Platform]
+      responses:
+        '200':
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/ready:
+    get:
+      summary: Readiness check
+      operationId: getHealthReady
+      tags: [Platform]
+      description: Returns ok only when Supabase is reachable.
+      responses:
+        '200':
+          description: Service ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/SchemaNotReady'
+
+  /api/pets:
+    get:
+      summary: List all pets
+      operationId: listPets
+      tags: [Pets]
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Optional page size (v2 pagination). Omit to return full catalog.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Pet list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pet'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/SchemaNotReady'
+
+  /api/pets/{id}:
+    get:
+      summary: Get pet by id
+      operationId: getPetById
+      tags: [Pets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]+$'
+          example: buster
+      responses:
+        '200':
+          description: Single pet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/SchemaNotReady'
+
+  /api/adoption-applications:
+    post:
+      summary: Submit adoption application
+      operationId: createAdoptionApplication
+      tags: [Adoption]
+      description: Rate limited to 10 requests per IP per minute.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdoptionApplicationRequest'
+      responses:
+        '201':
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdoptionApplicationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Pet not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error: Pet not available for adoption
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error: Too many requests
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/SchemaNotReady'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          example: true
+
+    Pet:
+      type: object
+      required: [id, name, status]
+      properties:
+        id:
+          type: string
+          example: buster
+        name:
+          type: string
+        quote:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+        age:
+          type: string
+          nullable: true
+        breed:
+          type: string
+          nullable: true
+        likes:
+          type: array
+          items:
+            type: string
+          default: []
+        tags:
+          type: array
+          items:
+            type: string
+          default: []
+        status:
+          type: string
+          enum: [available, pending, adopted]
+        refId:
+          type: string
+          nullable: true
+
+    AdoptionApplicationRequest:
+      type: object
+      required: [petId, applicantName, favoriteSnack, promiseGiven]
+      properties:
+        petId:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          example: buster
+        applicantName:
+          type: string
+          maxLength: 200
+        favoriteSnack:
+          type: string
+          maxLength: 200
+        promiseGiven:
+          type: boolean
+          enum: [true]
+
+    AdoptionApplicationResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+
+    ErrorBody:
+      type: object
+      properties:
+        error:
+          type: string
+        hint:
+          type: string
+        code:
+          type: string
+        details:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+          example:
+            error: Invalid payload
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+          example:
+            error: Not found
+    InternalError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+          example:
+            error: Internal server error
+    SchemaNotReady:
+      description: Database schema not migrated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+
+  securitySchemes: {}
+
+security: []

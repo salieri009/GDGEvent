@@ -7,6 +7,10 @@
     "lint": "npm --prefix src/frontend run lint",
     "dev:api": "npm --prefix src/backend run dev",
     "lint:api": "npm --prefix src/backend run lint",
+    "test": "npm --prefix src/frontend run test && npm --prefix src/backend run test",
+    "test:frontend": "npm --prefix src/frontend run test",
+    "test:backend": "npm --prefix src/backend run test",
+    "validate:openapi": "node scripts/validate-openapi.mjs",
     "build:api": "npm --prefix src/backend run build"
   }
 }
