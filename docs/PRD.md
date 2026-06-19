@@ -36,7 +36,8 @@
 | F4 | Pet detail + status badge | Yes |
 | F5 | Adoption form + POST | Yes |
 | F6 | Success confirmation | Yes |
-| F7–F9 | Login, email, payments | No / out of scope |
+| F7 | Admin login + review applications | Yes (v2) |
+| F8–F9 | Email, payments | No / out of scope |
 
 ---
 
@@ -58,6 +59,8 @@
 | `/pets` | List |
 | `/pet/:id` | Detail |
 | `/adopt/:id` | Application (available pets only) |
+| `/admin/login` | Operator API key login (v2) |
+| `/admin/applications` | Pending application review (v2) |
 
 Marketing: `/#why-doodlepaws` anchor — no `/about` or `/foster` routes.
 
@@ -66,6 +69,10 @@ Marketing: `/#why-doodlepaws` anchor — no `/about` or `/foster` routes.
 ## 6. Non-goals
 
 Auth, admin UI, email, payments, dedicated marketing routes, AI, i18n.
+
+**v2.0 delivered:** operator login (`ADMIN_API_KEY`), admin application review UI, server-side pet filters, `v2-migration.sql` RPCs (submit + review).
+
+**Still out of scope:** end-user auth/OAuth, email notifications, payments, E2E test suite.
 
 ---
 
@@ -85,7 +92,9 @@ Auth, admin UI, email, payments, dedicated marketing routes, AI, i18n.
 |---------|-------|
 | v1.0 | F1–F6 |
 | v1.1 | OpenAPI CI (`npm run validate:openapi`), richer 409/429 copy ✅ |
-| v2.0 | Admin, auth, status workflow, RLS hardening |
+| v2.0 | Admin login + review UI, pet list filters, RLS/RPC via `v2-migration.sql` ✅ |
+
+**v2.1+ (future):** end-user OAuth, email, E2E, observability.
 
 ---
 

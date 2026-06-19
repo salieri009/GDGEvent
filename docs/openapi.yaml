@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DoodlePaws API
-  version: 1.0.0
+  version: 2.0.0
   description: |
     Express BFF for pet catalog and adoption applications.
     Human summary and sync rules — see docs/apiSpec.md and docs/README.md.
@@ -62,7 +62,7 @@ paths:
             type: integer
             minimum: 1
             maximum: 100
-          description: Optional page size (v2 pagination). Omit to return full catalog.
+          description: Optional page size (v1.1 — implemented). Omit to return full catalog.
         - name: offset
           in: query
           required: false
@@ -70,6 +70,25 @@ paths:
             type: integer
             minimum: 0
             default: 0
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [available, pending, adopted]
+          description: Filter by pet status (v2)
+        - name: tag
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter pets containing this tag (v2)
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Search name or tags substring (v2)
       responses:
         '200':
           description: Pet list
@@ -157,6 +176,103 @@ paths:
         '503':
           $ref: '#/components/responses/SchemaNotReady'
 
+  /api/admin/login:
+    post:
+      summary: Admin login (API key)
+      operationId: adminLogin
+      tags: [Admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminLoginRequest'
+      responses:
+        '200':
+          description: Credentials valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: Admin not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+
+  /api/admin/applications:
+    get:
+      summary: List adoption applications (admin)
+      operationId: listAdminApplications
+      tags: [Admin]
+      security:
+        - AdminKey: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+            default: pending
+      responses:
+        '200':
+          description: Application list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdoptionApplication'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/SchemaNotReady'
+
+  /api/admin/applications/{id}/review:
+    post:
+      summary: Approve or reject application (admin)
+      operationId: reviewAdoptionApplication
+      tags: [Admin]
+      security:
+        - AdminKey: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewApplicationRequest'
+      responses:
+        '200':
+          description: Review recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewApplicationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Application not pending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '503':
+          $ref: '#/components/responses/SchemaNotReady'
+
 components:
   schemas:
     HealthResponse:
@@ -235,6 +351,57 @@ components:
           type: boolean
           enum: [true]
 
+    AdoptionApplication:
+      type: object
+      required: [id, petId, petName, applicantName, promiseGiven, status, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        petId:
+          type: string
+        petName:
+          type: string
+        applicantName:
+          type: string
+        favoriteSnack:
+          type: string
+          nullable: true
+        promiseGiven:
+          type: boolean
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminLoginRequest:
+      type: object
+      required: [apiKey]
+      properties:
+        apiKey:
+          type: string
+
+    ReviewApplicationRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [approve, reject]
+
+    ReviewApplicationResponse:
+      type: object
+      required: [ok, action]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+        action:
+          type: string
+          enum: [approve, reject]
+
     ErrorBody:
       type: object
       properties:
@@ -278,7 +445,19 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorBody'
+    Unauthorized:
+      description: Missing or invalid admin credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+          example:
+            error: Unauthorized
 
-  securitySchemes: {}
+  securitySchemes:
+    AdminKey:
+      type: apiKey
+      in: header
+      name: X-Admin-Key
 
 security: []

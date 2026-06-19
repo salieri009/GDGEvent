@@ -1,31 +1,28 @@
 import { Link, useParams } from 'react-router-dom';
 import {
-  Heart,
   ArrowLeft,
   ArrowRight,
   Info,
   Calendar,
   MapPin,
   Bone,
-  Share2,
   PawPrint,
 } from 'lucide-react';
 import DoodleBox from '@/shared/ui/DoodleBox';
 import RetryPanel from '@/shared/ui/RetryPanel';
+import LoadingMessage from '@/shared/ui/LoadingMessage';
+import { UI_COPY } from '@/shared/constants/uiCopy';
 import { isPetAvailable } from '@/shared/lib/petStatus';
 import PetStatusBadge from '../components/PetStatusBadge';
 import { usePet } from '../hooks/usePets';
+import { petEnergyLabel, petEnergyPercent } from '../utils/petEnergy';
 
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: pet, loading, error, reload } = usePet(id);
 
   if (loading) {
-    return (
-      <div className="p-48 text-center font-black text-4xl uppercase animate-pulse italic">
-        Studying the records...
-      </div>
-    );
+    return <LoadingMessage className="italic">{UI_COPY.loading.petDetail}</LoadingMessage>;
   }
 
   if (error) {
@@ -35,7 +32,7 @@ export default function PetDetailPage() {
   if (!pet) {
     return (
       <div className="p-48 text-center space-y-6">
-        <p className="text-2xl uppercase font-black">Pup not found!</p>
+        <p className="text-2xl uppercase font-black">{UI_COPY.empty.petNotFound}</p>
         <Link
           to="/pets"
           className="inline-block px-8 py-4 bg-primary border-4 border-slate-border rounded-2xl font-black uppercase shadow-hard hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
@@ -46,9 +43,12 @@ export default function PetDetailPage() {
     );
   }
 
+  const energy = petEnergyPercent(pet);
+  const energyLabel = petEnergyLabel(energy);
+
   return (
     <div className="max-w-7xl mx-auto px-8 py-12 space-y-16">
-      <Link to="/pets" className="flex items-center gap-2 text-slate-400 hover:text-primary mb-8 group transition-colors">
+      <Link to="/pets" className="flex items-center gap-2 text-slate-400 hover:text-primary mb-8 group transition-colors focus-ring rounded-lg w-fit">
         <ArrowLeft size={20} className="group-hover:-translate-x-2 transition-transform stroke-[3]" />
         <span className="font-black text-sm uppercase tracking-[0.2em]">Back to the Pack</span>
       </Link>
@@ -69,21 +69,45 @@ export default function PetDetailPage() {
               </div>
             )}
           </div>
-          <PetStatusBadge
-            status={pet.status}
-            variant="detail"
-            className="absolute -bottom-8 -right-8 border-4 border-slate-border px-8 py-3 rotate-6 z-20 font-black uppercase text-xl shadow-hard"
-          />
         </div>
 
         <div className="lg:col-span-7 space-y-10">
           <div className="space-y-2">
-            <h2 className="text-7xl md:text-8xl font-black italic tracking-tighter leading-none">{pet.name}</h2>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap items-center gap-4">
+              <h1 className="text-7xl md:text-8xl font-black italic tracking-tighter leading-none">{pet.name}</h1>
+              <PetStatusBadge status={pet.status} variant="detail" className="pill-badge text-sm" />
+            </div>
+            <div className="flex flex-wrap gap-3">
               {pet.breed ? <span className="pill-badge bg-blue-100">{pet.breed}</span> : null}
               {pet.age ? <span className="pill-badge bg-yellow-100">{pet.age}</span> : null}
+              {pet.tags.map((tag) => (
+                <span key={tag} className="pill-badge bg-secondary">
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
+
+          {isPetAvailable(pet) ? (
+            <Link
+              to={`/adopt/${pet.id}`}
+              className="inline-flex items-center gap-3 bg-primary border-4 border-slate-border px-8 py-4 rounded-2xl font-black uppercase shadow-hard hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all focus-ring"
+            >
+              Apply to Adopt
+              <ArrowRight size={24} className="stroke-[3]" aria-hidden />
+            </Link>
+          ) : (
+            <div className="p-6 bg-yellow-50 border-4 border-slate-border rounded-2xl space-y-2">
+              <p className="font-black uppercase text-lg">{UI_COPY.unavailable.detailMessage}</p>
+              <p className="text-sm font-medium text-slate-600">{UI_COPY.unavailable.detailHint}</p>
+              <Link
+                to="/pets"
+                className="inline-block mt-2 text-sm font-black uppercase tracking-widest text-primary hover:underline"
+              >
+                Browse the pack →
+              </Link>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             {[
@@ -100,11 +124,6 @@ export default function PetDetailPage() {
                 </div>
               </div>
             ))}
-          </div>
-
-          <div className="flex gap-4">
-            <Heart aria-label={`Favorite ${pet.name}`} className="w-10 h-10 text-slate-border hover:fill-primary transition-all cursor-pointer stroke-[3]" />
-            <Share2 aria-label={`Share ${pet.name}`} className="w-10 h-10 text-slate-border hover:text-secondary transition-all cursor-pointer stroke-[3]" />
           </div>
         </div>
       </section>
@@ -134,10 +153,20 @@ export default function PetDetailPage() {
                 <span>Sleepy</span>
                 <span>Wild</span>
               </div>
-              <div className="h-6 w-full bg-white border-4 border-slate-border rounded-full overflow-hidden p-1">
-                <div className="h-full bg-primary rounded-full transition-all" style={{ width: '75%' }} />
+              <div
+                role="meter"
+                aria-valuenow={energy}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Energy level for ${pet.name}: ${energyLabel}`}
+                className="h-6 w-full bg-white border-4 border-slate-border rounded-full overflow-hidden p-1"
+                style={{ ['--vibe-energy' as string]: `${energy}%` }}
+              >
+                <div className="h-full bg-primary rounded-full transition-all vibe-energy-fill" />
               </div>
-              <p className="text-sm font-bold text-center italic opacity-70 uppercase">{pet.quote || 'Ready for adventure'}</p>
+              <p className="text-sm font-bold text-center italic opacity-70 uppercase">
+                {energyLabel} · {pet.quote || 'Ready for adventure'}
+              </p>
             </div>
           </div>
 
@@ -167,7 +196,7 @@ export default function PetDetailPage() {
           </div>
           <Link
             to={`/adopt/${pet.id}`}
-            className="group relative px-16 py-6 bg-primary text-white border-8 border-slate-border rounded-full shadow-hard-blue hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center gap-6"
+            className="group relative px-16 py-6 bg-primary text-white border-8 border-slate-border rounded-full shadow-hard-blue hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center gap-6 focus-ring"
           >
             <span className="text-4xl font-black uppercase tracking-tighter italic">Apply to Adopt</span>
             <ArrowRight size={40} className="group-hover:translate-x-4 transition-transform stroke-[4]" />

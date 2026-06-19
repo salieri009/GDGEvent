@@ -41,3 +41,47 @@ $$;
 
 revoke all on function public.submit_adoption_application(text, text, text, boolean) from public;
 grant execute on function public.submit_adoption_application(text, text, text, boolean) to service_role;
+
+-- Admin review: approve (pet → adopted) or reject (pet → available)
+create or replace function public.review_adoption_application(
+  p_application_id uuid,
+  p_action text
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_app record;
+begin
+  if p_action not in ('approve', 'reject') then
+    raise exception 'invalid_action';
+  end if;
+
+  select a.id, a.pet_id, a.status, p.status as pet_status
+  into v_app
+  from public.adoption_applications a
+  join public.pets p on p.id = a.pet_id
+  where a.id = p_application_id
+  for update of a, p;
+
+  if not found then
+    raise exception 'application_not_found';
+  end if;
+
+  if v_app.status <> 'pending' then
+    raise exception 'application_not_pending';
+  end if;
+
+  if p_action = 'approve' then
+    update public.adoption_applications set status = 'approved' where id = p_application_id;
+    update public.pets set status = 'adopted' where id = v_app.pet_id;
+  else
+    update public.adoption_applications set status = 'rejected' where id = p_application_id;
+    update public.pets set status = 'available' where id = v_app.pet_id;
+  end if;
+end;
+$$;
+
+revoke all on function public.review_adoption_application(uuid, text) from public;
+grant execute on function public.review_adoption_application(uuid, text) to service_role;

@@ -46,6 +46,10 @@ Direct URL to `/adopt/:id` allowed; page enforces FR-3.6.
 
 POST body: see [openapi.yaml](../openapi.yaml).
 
+### v2 backend effect
+
+When [`v2-migration.sql`](../../src/backend/supabase/v2-migration.sql) is applied, successful POST also sets pet → `pending`. UI copy unchanged; list/detail badges reflect new status on next fetch.
+
 ---
 
 ## Related

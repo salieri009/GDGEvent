@@ -1,4 +1,4 @@
-import { Pet } from './types.js';
+import { Pet, AdoptionApplication } from './types.js';
 
 function nullableString(value: unknown): string | null {
   if (value == null) return null;
@@ -19,6 +19,26 @@ export function mapPetRow(row: Record<string, unknown>): Pet {
     tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
     status: row.status as Pet['status'],
     refId: nullableString(row.ref_id),
+  };
+}
+
+export function mapApplicationRow(
+  row: Record<string, unknown>,
+  petName?: string,
+): AdoptionApplication {
+  const pets = row.pets as Record<string, unknown> | null | undefined;
+  const resolvedPetName =
+    petName ?? (pets?.name != null ? String(pets.name) : String(row.pet_id ?? ''));
+
+  return {
+    id: String(row.id),
+    petId: String(row.pet_id),
+    petName: resolvedPetName,
+    applicantName: String(row.applicant_name),
+    favoriteSnack: nullableString(row.favorite_snack),
+    promiseGiven: Boolean(row.promise_given),
+    status: row.status as AdoptionApplication['status'],
+    createdAt: String(row.created_at),
   };
 }
 

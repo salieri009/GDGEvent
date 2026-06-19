@@ -24,7 +24,7 @@ alwaysApply: false
 ## Error mapping
 
 - `PGRST116` → 404 `{ error: "Not found" }`
-- Missing schema → 503 with setup hint
+- Missing schema → 503 with setup hint (omit `details` when `NODE_ENV=production`)
 - Other DB errors → 500 `{ error: "Internal server error" }`
 
 ## When changing endpoints

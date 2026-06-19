@@ -141,13 +141,38 @@ Mapper: [`mappers.ts`](../../src/backend/src/mappers.ts)
 | cloud | Cloud | available | Chaos, Fluffy |
 | daisy | Daisy | available | Gentle, Sweet Soul |
 
-**Filter pills** (UI): `Very Wiggly`, `Expert Napper`, `Gentle` — defined in `PetsList.tsx`; must stay in sync with seed `tags` above.
+**Filter pills** (UI): `Very Wiggly`, `Expert Napper`, `Gentle` — `features/pets/constants.ts` (`FILTER_TAGS`). Pills are a **subset** of seed tags for demo filtering; e.g. `cloud` has `Chaos`, `Fluffy` only (no pill match — find via search).
+
+---
+
+## v2 migration (`v2-migration.sql`)
+
+Run **after** [`schema.sql`](../../src/backend/supabase/schema.sql) on the Supabase SQL editor.
+
+| Change | Purpose |
+|--------|---------|
+| `submit_adoption_application(...)` RPC | Atomic INSERT + `pets.status` → `pending` (`FOR UPDATE`) |
+| Revoke anon INSERT on `adoption_applications` | BFF-only writes (OQ5 / NFR-2.6 target) |
+| `GRANT EXECUTE` to `service_role` only | Browser never calls RPC directly |
+
+**BFF behavior:** [`index.ts`](../../src/backend/src/index.ts) calls RPC first; if function missing, falls back to legacy SELECT + INSERT (TOCTOU, status unchanged).
+
+**Operator checklist:** `schema.sql` → optional `v2-migration.sql` → verify `GET /health/ready` → smoke POST adoption → confirm pet badge shows `pending` on list refresh.
+
+### Admin review RPC (`review_adoption_application`)
+
+| Action | Application | Pet |
+|--------|-------------|-----|
+| `approve` | `pending` → `approved` | → `adopted` |
+| `reject` | `pending` → `rejected` | → `available` |
+
+BFF: POST `/api/admin/applications/:id/review` with `X-Admin-Key` header.
 
 ---
 
 ## v1 known gaps (by design)
 
-1. No automatic `pets.status` change after application submit  
+1. **Legacy DB**: no automatic `pets.status` change on submit; **v2 migration** RPC sets `pending` — see [state-machines](state-machines.md)  
 2. No unique constraint on duplicate applications for the same pet  
 3. No `adoption_applications.updated_at` column  
 

@@ -30,8 +30,9 @@ Docker: `docker compose up --build` → web `:8080`, API `:4000`.
 | GET | `/health`, `/health/ready` |
 | GET | `/api/pets`, `/api/pets/:id` |
 | POST | `/api/adoption-applications` |
+| POST/GET | `/api/admin/login`, `/api/admin/applications`, review RPC (v2) |
 
-Optional: `GET /api/pets?limit=&offset=` (max 100). v2 atomic adoption: `src/backend/supabase/v2-migration.sql`.
+Optional: `GET /api/pets?limit=&offset=&status=&tag=&q=`. v2: `v2-migration.sql` + `ADMIN_API_KEY`.
 
 ## Scripts (repo root)
 

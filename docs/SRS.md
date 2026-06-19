@@ -54,6 +54,16 @@
 | FR-4.3 | Docker healthcheck | Uses FR-4.1 on api service |
 | FR-4.4 | Schema not migrated | 503 + hint on PostgREST schema errors |
 
+### FR-5 Admin (v2)
+
+| ID | Requirement | Acceptance |
+|----|-------------|------------|
+| FR-5.1 | Operator logs in with API key | POST `/api/admin/login`; key stored client-side as `X-Admin-Key` |
+| FR-5.2 | List pending applications | GET `/api/admin/applications?status=pending` |
+| FR-5.3 | Approve application | POST review `{ action: "approve" }` → app `approved`, pet `adopted` (RPC) |
+| FR-5.4 | Reject application | POST review `{ action: "reject" }` → app `rejected`, pet `available` (RPC) |
+| FR-5.5 | Server-side pet filters | GET `/api/pets?status=&tag=&q=` |
+
 ---
 
 ## 3. Non-functional requirements
@@ -65,7 +75,7 @@
 | NFR-1.1 | Pet list API (local, warm) | p95 < 500ms | ≤100 pets, seq scan |
 | NFR-1.2 | SPA first paint (local) | < 3s | Manual Lighthouse |
 | NFR-1.3 | JSON body limit | 1 MB | Express |
-| NFR-1.4 | Catalog scale ceiling | Client filter valid ≤100 pets | Beyond: server pagination (v2) |
+| NFR-1.4 | Catalog scale ceiling | Client filter valid ≤100 pets | Optional `?limit`/`?offset` on `GET /api/pets` (v1.1 implemented); UI still loads full catalog in v1 |
 
 ### NFR-2 Security
 
@@ -118,7 +128,7 @@
 
 - Tables: `pets`, `adoption_applications` — [ERD](architecture/erd.md)
 - Seed: 4 pets minimum
-- Application insert: `status = pending`; pet status unchanged in v1 — [state-machines](architecture/state-machines.md)
+- Application insert: `status = pending`; pet status unchanged in **legacy v1 fallback**; v2 RPC sets pet → `pending` — [state-machines](architecture/state-machines.md)
 
 ---
 
@@ -150,7 +160,7 @@
 
 | ID | Question | v1 default |
 |----|----------|------------|
-| OQ1 | Auto-set pet → pending on application? | No — [state-machines](architecture/state-machines.md) |
+| OQ1 | Auto-set pet → pending on application? | **Legacy:** No. **With v2 RPC:** Yes — [state-machines](architecture/state-machines.md), [ERD § v2 migration](architecture/erd.md) |
 | OQ2 | Allow duplicate applications? | Yes |
 | OQ3 | Production deploy Mode A or B? | Mode A for Docker demo |
 | OQ4 | Rate limit across replicas? | Single instance or accept drift |

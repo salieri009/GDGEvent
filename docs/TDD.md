@@ -43,7 +43,16 @@ matchesTags = no pills OR pet.tags intersects activePills (OR semantics)
 visible = matchesSearch AND matchesTags
 ```
 
-**Scale:** Valid for ≤100 pets (NFR-1.4). v2: `GET /api/pets?tag=&q=&status=`.
+**Scale:** Valid for ≤100 pets (NFR-1.4). **v1.1:** optional `GET /api/pets?limit=&offset=` (max 100) — UI still loads full catalog. **v2:** server-side `tag`, `q`, `status` filters.
+
+### Pagination (v1.1 implemented)
+
+| Param | Rule |
+|-------|------|
+| `limit` | 1–100 (default: return all when omitted) |
+| `offset` | ≥0 |
+
+Backend: `parsePaginationQuery` in [`index.ts`](../../src/backend/src/index.ts). OpenAPI: [openapi.yaml](openapi.yaml).
 
 ### Tag pills
 
@@ -79,24 +88,18 @@ sequenceDiagram
   alt not available
     B-->>F: 409
   else available
-    B->>S: INSERT application pending
+    alt RPC submit_adoption_application exists
+      B->>S: RPC (insert + pet pending)
+    else legacy fallback
+      B->>S: INSERT application pending
+    end
     B-->>F: 201 ok true
   end
 ```
 
-### Concurrency (NFR-5.2)
+**v2 path:** When [`v2-migration.sql`](../../src/backend/supabase/v2-migration.sql) applied, RPC runs in one transaction — pet → `pending`, no TOCTOU ([state-machines](architecture/state-machines.md) §4).
 
-**v1:** Two round trips without transaction — concurrent POSTs can both pass availability check.
-
-**v2 target:**
-
-```sql
--- sketch: single RPC
-BEGIN;
-SELECT status FROM pets WHERE id = $1 FOR UPDATE;
--- if available → insert application; optional update pet pending
-COMMIT;
-```
+**Legacy fallback:** Two round trips without transaction — concurrent POSTs can both pass availability check; pet status unchanged.
 
 ### Adopt page guard (FR-3.6)
 
@@ -163,10 +166,29 @@ Page-local `useState` only — no global store v1.
 
 | Concern | Path |
 |---------|------|
-| Routes | `src/backend/src/index.ts` |
+| API routes | `src/backend/src/index.ts` |
+| Admin routes | `src/backend/src/admin.ts` |
+| Admin auth middleware | `src/backend/src/middleware/adminAuth.ts` |
 | Errors | `src/backend/src/errors.ts` |
-| HTTP client | `src/frontend/src/services/api.ts` |
-| Pages | `src/frontend/src/pages/*.tsx` |
+| App routes | `src/frontend/src/app/routes.tsx` |
+| HTTP client | `src/frontend/src/shared/api/client.ts` |
+| Feature pages | `src/frontend/src/features/*/pages/*Page.tsx` |
+| UI copy | `src/frontend/src/shared/constants/uiCopy.ts` |
+| Filter pills | `src/frontend/src/features/pets/constants.ts` |
+| Admin UI | `src/frontend/src/features/admin/pages/*` |
+
+---
+
+## 10. Admin review (FR-5, v2)
+
+| Step | Path |
+|------|------|
+| Login | POST `/api/admin/login` `{ apiKey }` — validates `ADMIN_API_KEY` |
+| Session | Client stores key; sends `X-Admin-Key` on admin routes |
+| List | GET `/api/admin/applications?status=pending` |
+| Review | POST `/api/admin/applications/:id/review` `{ action }` → RPC `review_adoption_application` |
+
+Requires `v2-migration.sql` for atomic approve/reject + pet status updates.
 
 ---
 

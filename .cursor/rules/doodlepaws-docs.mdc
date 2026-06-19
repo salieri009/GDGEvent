@@ -37,5 +37,5 @@ alwaysApply: false
 ## Source of truth
 
 - Endpoints: `src/backend/src/index.ts`
-- Routes: `src/frontend/src/App.tsx`
+- Routes: `src/frontend/src/app/routes.tsx` (entry: `main.tsx` → `app/App.tsx`)
 - Schema: `src/backend/supabase/schema.sql`

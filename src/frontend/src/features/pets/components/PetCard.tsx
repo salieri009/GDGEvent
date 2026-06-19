@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Heart, Share2 } from 'lucide-react';
 import type { Pet } from '@/shared/types/pet';
 import DoodleBox from '@/shared/ui/DoodleBox';
 import PetStatusBadge from './PetStatusBadge';
@@ -48,7 +47,6 @@ export default function PetCard({ pet, layout = 'grid' }: PetCardProps) {
           <div>
             <div className="flex justify-between items-start">
               <h2 className="text-3xl font-black mb-2 italic tracking-tighter">{pet.name}</h2>
-              <Heart className="text-slate-border w-8 h-8 hover:fill-primary hover:text-primary transition-all cursor-pointer" />
             </div>
             <p className="font-bold text-slate-500 uppercase text-xs tracking-widest mb-4">
               {[pet.breed, pet.age].filter(Boolean).join(' • ') || 'Unknown breed'}
@@ -59,13 +57,10 @@ export default function PetCard({ pet, layout = 'grid' }: PetCardProps) {
           <div className="flex gap-4">
             <Link
               to={`/pet/${pet.id}`}
-              className="flex-1 py-3 bg-primary border-4 border-slate-border rounded-2xl font-black uppercase text-center shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+              className="flex-1 py-3 bg-primary border-4 border-slate-border rounded-2xl font-black uppercase text-center shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all focus-ring"
             >
               View Profile
             </Link>
-            <button type="button" aria-label={`Share ${pet.name}`} className="p-3 border-4 border-slate-border rounded-2xl hover:bg-secondary transition-colors">
-              <Share2 className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </DoodleBox>
@@ -98,13 +93,12 @@ export default function PetCard({ pet, layout = 'grid' }: PetCardProps) {
           <h2 className="text-2xl font-black italic tracking-tighter">
             {ageLabel ? `${pet.name}, ${ageLabel}` : pet.name}
           </h2>
-          <Heart className="text-slate-border w-6 h-6 hover:text-primary transition-colors cursor-pointer" />
         </div>
         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">{pet.breed ?? 'Mixed'}</p>
         <p className="text-sm line-clamp-2 mb-6 italic opacity-70">{pet.description ?? 'No description yet.'}</p>
         <Link
           to={`/pet/${pet.id}`}
-          className="mt-auto py-2 border-b-2 border-slate-border font-black text-sm uppercase tracking-widest hover:text-primary transition-all text-center"
+          className="mt-auto py-3 bg-primary border-4 border-slate-border rounded-2xl font-black uppercase text-center text-sm shadow-hard hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all focus-ring"
         >
           View Profile
         </Link>

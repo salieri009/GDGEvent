@@ -1,11 +1,13 @@
 import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
+import helmet from 'helmet';
 import { env } from './env.js';
 import { supabaseAdmin } from './supabase.js';
 import { mapPetRow } from './mappers.js';
 import { AdoptionApplicationPayload } from './types.js';
 import { respondSupabaseError } from './errors.js';
-import { parsePaginationQuery, PET_ID_PATTERN, validateAdoptionPayload } from './validation.js';
+import { parsePaginationQuery, PET_ID_PATTERN, parsePetListFilters, petMatchesSearch, validateAdoptionPayload } from './validation.js';
+import { adminRouter } from './admin.js';
 
 const app = express();
 
@@ -35,6 +37,7 @@ function rateLimit(req: Request, res: Response, next: NextFunction) {
 }
 
 app.disable('x-powered-by');
+app.use(helmet());
 app.use(express.json({ limit: '1mb' }));
 
 app.use(
@@ -59,15 +62,34 @@ app.get('/health/ready', async (_req, res) => {
 
 app.get('/api/pets', async (req, res) => {
   const pagination = parsePaginationQuery(req.query.limit, req.query.offset);
+  const filters = parsePetListFilters(req.query as Record<string, unknown>);
+
   let query = supabaseAdmin.from('pets').select('*').order('created_at', { ascending: true });
 
-  if (pagination) {
+  if (filters.status) {
+    query = query.eq('status', filters.status);
+  }
+  if (filters.tag) {
+    query = query.contains('tags', [filters.tag]);
+  }
+
+  const needsClientSearch = Boolean(filters.q);
+  if (pagination && !needsClientSearch) {
     query = query.range(pagination.offset, pagination.offset + pagination.limit - 1);
   }
 
   const { data, error } = await query;
   if (error) return respondSupabaseError(res, error);
-  return res.json((data ?? []).map((row) => mapPetRow(row as unknown as Record<string, unknown>)));
+
+  let rows = data ?? [];
+  if (filters.q) {
+    rows = rows.filter((row) => petMatchesSearch(row, filters.q!));
+    if (pagination) {
+      rows = rows.slice(pagination.offset, pagination.offset + pagination.limit);
+    }
+  }
+
+  return res.json(rows.map((row) => mapPetRow(row as unknown as Record<string, unknown>)));
 });
 
 app.get('/api/pets/:id', async (req, res) => {
@@ -131,6 +153,8 @@ app.post('/api/adoption-applications', rateLimit, async (req, res) => {
 
   return res.status(201).json({ ok: true });
 });
+
+app.use('/api/admin', adminRouter);
 
 app.listen(env.PORT, () => {
   // eslint-disable-next-line no-console

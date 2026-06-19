@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import RetryPanel from '@/shared/ui/RetryPanel';
+import { UI_COPY } from '@/shared/constants/uiCopy';
 import { countAvailable, pickFeaturedPet } from '@/features/pets/utils/filterPets';
 import { usePets } from '@/features/pets/hooks/usePets';
+import PetStatusBadge from '@/features/pets/components/PetStatusBadge';
 
 export default function HomePage() {
   const { data: pets, loading, error, reload } = usePets();
@@ -22,11 +24,12 @@ export default function HomePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-8 py-12 md:py-24">
+      <h1 className="sr-only">DoodlePaws — Find and adopt your rescue dog</h1>
       <section className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-24 min-h-[600px] items-center">
         <div className="md:col-span-7 flex flex-col justify-center gap-8">
           <div className="pill-badge bg-blue-100 w-fit">
             {loading
-              ? 'Loading the pack...'
+              ? UI_COPY.loading.homePack
               : availableCount > 0
                 ? `${availableCount} Pup${availableCount === 1 ? '' : 's'} waiting for you`
                 : 'The pack is resting'}
@@ -42,13 +45,13 @@ export default function HomePage() {
           <div className="flex gap-4 mt-4">
             <Link
               to="/pets"
-              className="bg-primary border-4 border-slate-border px-8 py-4 rounded-2xl text-xl font-black uppercase shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+              className="bg-primary border-4 border-slate-border px-8 py-4 rounded-2xl text-xl font-black uppercase shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all focus-ring"
             >
               Browse Pets
             </Link>
             <Link
               to="/#why-doodlepaws"
-              className="border-4 border-slate-border px-8 py-4 rounded-2xl text-xl font-black uppercase bg-white hover:bg-slate-50 transition-all"
+              className="border-4 border-slate-border px-8 py-4 rounded-2xl text-xl font-black uppercase bg-white hover:bg-slate-50 transition-all focus-ring"
             >
               Learn More
             </Link>
@@ -57,7 +60,11 @@ export default function HomePage() {
 
         <div className="md:col-span-5 flex flex-col gap-6 h-full justify-center relative z-10">
           {featured ? (
-            <div className="bg-white border-4 border-slate-border rounded-geo-lg shadow-hard p-6 flex flex-col relative group z-10">
+            <Link
+              to={`/pet/${featured.id}`}
+              className="bg-white border-4 border-slate-border rounded-geo-lg shadow-hard p-6 flex flex-col relative group z-10 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+              aria-label={`View ${featured.name}'s profile`}
+            >
               <div className="absolute -top-6 -right-6 w-24 h-24 bg-primary border-4 border-slate-border rounded-full flex items-center justify-center -rotate-12 shadow-lg group-hover:rotate-0 transition-transform z-20">
                 <span className="text-center font-black text-xs leading-none uppercase text-white">
                   Featured
@@ -66,6 +73,11 @@ export default function HomePage() {
                 </span>
               </div>
               <div className="w-full aspect-[4/5] bg-slate-100 rounded-geo border-2 border-slate-border overflow-hidden mb-4 relative">
+                <PetStatusBadge
+                  status={featured.status}
+                  variant="card"
+                  className="absolute top-3 left-3 pill-badge z-10 shadow-sm"
+                />
                 {featured.imageUrl ? (
                   <img
                     src={featured.imageUrl}
@@ -84,10 +96,13 @@ export default function HomePage() {
                   </p>
                 </div>
               </div>
-            </div>
+              <p className="mt-4 text-center text-xs font-black uppercase tracking-widest text-primary group-hover:underline">
+                View {featured.name}&apos;s profile →
+              </p>
+            </Link>
           ) : (
             <div className="bg-white border-4 border-slate-border rounded-geo-lg shadow-hard p-12 text-center font-black uppercase italic text-slate-400">
-              {loading ? 'Fetching featured pup...' : 'No pups on the roster yet'}
+              {loading ? UI_COPY.loading.homeFeatured : UI_COPY.empty.noPups}
             </div>
           )}
 

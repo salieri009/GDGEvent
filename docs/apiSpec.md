@@ -14,9 +14,12 @@
 |--------|------|-------------|
 | GET | `/health` | Liveness — process up |
 | GET | `/health/ready` | Readiness — DB reachable (Supabase ping) |
-| GET | `/api/pets` | All pets, `created_at` asc; optional `?limit=1–100&offset=0` (v2 pagination) |
+| GET | `/api/pets` | All pets, `created_at` asc; optional `?limit=1–100&offset=0` (v1.1); **`?status=&tag=&q=`** (v2 filters) |
 | GET | `/api/pets/{id}` | One pet; `{id}` = `[a-z0-9-]+` |
 | POST | `/api/adoption-applications` | Submit application (rate limited) |
+| POST | `/api/admin/login` | Operator login — body `{ "apiKey" }` |
+| GET | `/api/admin/applications` | List applications — header `X-Admin-Key`; optional `?status=pending` |
+| POST | `/api/admin/applications/{id}/review` | Approve/reject — body `{ "action": "approve" \| "reject" }` |
 
 ---
 
@@ -63,7 +66,7 @@ Full schema: [openapi.yaml `#/components/schemas/Pet`](openapi.yaml).
 | 500 | Internal server error |
 | 503 | Schema not migrated |
 
-503 may include `hint`, `code`, `details`.
+503 may include `hint`, `code`, `details` (dev only — `details` omitted when `NODE_ENV=production`).
 
 ---
 

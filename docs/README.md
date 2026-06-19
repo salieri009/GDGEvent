@@ -60,6 +60,7 @@ PRD (scope)
 | [ux-ui-flows/adopt-application.md](ux-ui-flows/adopt-application.md) | Adoption screen detail |
 | [ux-ui-flows/ux-ui-rules.md](ux-ui-flows/ux-ui-rules.md) | UI design tokens |
 | [dev-readiness-review.md](dev-readiness-review.md) | Alignment audit record |
+| [roadmap-loop-plan.md](roadmap-loop-plan.md) | 10-loop doc sync checklist (complete) |
 
 ## Recommended reading order
 
@@ -76,9 +77,10 @@ PRD → SRS → C4 → ERD → state-machines → OpenAPI → User Flow → TDD 
 | Seed pets | `buster`, `luna`, `cloud`, `daisy` (4 total) |
 | Pet statuses | `available`, `pending`, `adopted` |
 | Application statuses | `pending`, `approved`, `rejected` |
-| v1 status workflow | Application submit **does not** change `pets.status` |
+| v1 status workflow | **Legacy fallback** (no v2 RPC): submit does **not** change `pets.status`. With `v2-migration.sql` RPC deployed, submit sets pet → `pending` — see [state-machines](architecture/state-machines.md) |
 | Rate limit | 10 POST / IP / minute |
 | Filter tag pills | `Very Wiggly`, `Expert Napper`, `Gentle` |
 | Filter semantics | OR among pills; AND with search |
 | Deploy default | **Mode A** (same-origin proxy, no CORS) |
 | Redirect after adopt success | 3 seconds → `/pets` |
+| Frontend layout | Feature folders: `app/`, `features/`, `shared/`, `components/layout/` — see [techspec](techspec.md) |

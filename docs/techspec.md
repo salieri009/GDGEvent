@@ -18,11 +18,10 @@
 src/
 ├── frontend/
 │   ├── src/
-│   │   ├── App.tsx              # Routes
-│   │   ├── components/          # Layout + UI
-│   │   ├── pages/               # Home, PetsList, PetDetail, Adopt
-│   │   ├── services/api.ts      # HTTP client + ApiError
-│   │   └── types.ts             # Frontend Pet type
+│   │   ├── app/                 # App shell + routes.tsx
+│   │   ├── components/          # Layout (Header, Footer, Layout)
+│   │   ├── features/            # home, pets, adoption (pages, api, hooks)
+│   │   └── shared/              # api/client.ts, hooks, ui, types, constants
 │   ├── nginx/default.conf       # SPA + API reverse proxy (Mode A)
 │   └── vite.config.ts           # Dev proxy to backend (Mode A)
 └── backend/
@@ -99,8 +98,16 @@ Defined in [`src/backend/supabase/schema.sql`](../src/backend/supabase/schema.sq
 |---------|----------|--------|
 | `npm run dev` | repo root | Frontend dev server (:3000, Mode A) |
 | `npm run dev:api` | repo root | Backend dev server (:4000) |
-| `npm run lint` | frontend / backend | `tsc --noEmit` |
+| `npm run lint` | repo root | Frontend `tsc --noEmit` |
+| `npm run lint:api` | repo root | Backend `tsc --noEmit` |
+| `npm test` | repo root | Vitest — frontend + backend (19 tests) |
+| `npm run test:frontend` | repo root | Frontend unit tests only |
+| `npm run test:backend` | repo root | Backend unit tests only |
+| `npm run validate:openapi` | repo root | OpenAPI sanity check ([`scripts/validate-openapi.mjs`](../scripts/validate-openapi.mjs)) |
+| `npm run build` / `npm run build:api` | repo root | Production builds |
 | `docker compose up --build` | repo root | nginx :8080 + API :4000 |
+
+**DB migrations:** `src/backend/supabase/schema.sql` (required) → optional `v2-migration.sql` ([ERD § v2 migration](architecture/erd.md)).
 
 ## Frontend routes
 
@@ -116,10 +123,11 @@ Defined in [`src/backend/supabase/schema.sql`](../src/backend/supabase/schema.sq
 
 | Constant | Value | Source |
 |----------|-------|--------|
-| Filter tag pills | `Very Wiggly`, `Expert Napper`, `Gentle` | `PetsList.tsx` |
-| Tag filter logic | OR among pills; AND with search | FR-1.5 |
-| Home pet count copy | `4 Pups` | matches seed count |
-| Adopt success redirect | 3s → `/pets` | `Adopt.tsx` |
+| Filter tag pills | `Very Wiggly`, `Expert Napper`, `Gentle` | `features/pets/constants.ts` (`FILTER_TAGS`) |
+| Tag filter logic | OR among pills; AND with search | `features/pets/utils/filterPets.ts` (FR-1.5) |
+| Loading / empty copy | See UX flows | `shared/constants/uiCopy.ts` |
+| Home pet count copy | Dynamic from API | `features/home/pages/HomePage.tsx` |
+| Adopt success redirect | 3s → `/pets` | `features/adoption/pages/AdoptPage.tsx` |
 | Adopt unavailable guard | Block message, no form | FR-3.6 |
 
 ## Backend hardening (current)
@@ -128,7 +136,7 @@ Defined in [`src/backend/supabase/schema.sql`](../src/backend/supabase/schema.sq
 - Adoption POST: field validation, pet availability check (409), IP rate limit (10/min)
 - Production CORS: denied unless `CORS_ORIGIN` set (Mode B)
 - 500 errors: generic message; details logged server-side
-- **Known v1 gap**: SELECT-then-INSERT race on adoption — documented in [TDD §4](TDD.md); v2 transaction
+- **Known v1 gap**: SELECT-then-INSERT race on adoption — legacy fallback only; mitigated when `v2-migration.sql` RPC deployed ([TDD §4](TDD.md))
 
 ## Health endpoints
 

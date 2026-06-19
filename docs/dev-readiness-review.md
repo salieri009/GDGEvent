@@ -1,7 +1,7 @@
 # Development Readiness & Alignment Review
 
 **Reviewer role**: Senior Software Architect  
-**Review date**: 2026-06-19 (final 5-loop pass)  
+**Review date**: 2026-06-19 (roadmap 10-loop pass, loops 1–10)  
 **Scope**: Full `docs/` pack vs `src/`, `schema.sql`, [openapi.yaml](openapi.yaml)
 
 ---
@@ -22,7 +22,7 @@
 
 | ID | Issue | Resolution | Status |
 |----|-------|------------|--------|
-| **C1** | Dual status enums, no v1 workflow | [state-machines.md](architecture/state-machines.md) — v1 explicit: submit does not change pet status; badges from DB | ✅ |
+| **C1** | Dual status enums, workflow ambiguity | [state-machines.md](architecture/state-machines.md) — dual path: legacy fallback leaves status unchanged; v2 RPC → `pending`; badges from DB | ✅ |
 | **C2** | RLS anon INSERT vs BFF boundary | [ERD](architecture/erd.md) current vs target; NFR-2.6; threat model in [C4](architecture/c4.md) | ✅ documented gap |
 | **C3** | Adoption POST TOCTOU race | [TDD.md](TDD.md) §4 concurrency; v2 transaction noted | ✅ documented gap |
 | **C4** | OpenAPI Pet required vs ERD nullability | [openapi.yaml](openapi.yaml) nullable optional fields; apiSpec aligned | ✅ |
@@ -55,10 +55,30 @@
 | Pet status enum + v1 rules | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 4 seed pets | ✓ | ✓ | — | ✓ | — | — | ✓ |
 | Filter pills + OR semantics | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ |
+| GET pagination optional | — | ✓ | ✓ | — | ✓ | — | ✓ |
+| UI_COPY centralized | — | — | — | — | ✓ | ✓ | ✓ |
+| v2 RPC / migration documented | — | ✓ | — | ✓ | ✓ | ✓ | ✓ |
 | Adopt guard unavailable | ✓ | ✓ | — | — | ✓ | ✓ | ✓ |
 | Adopt redirect 3s | ✓ | ✓ | — | — | ✓ | ✓ | ✓ |
 | Mode A default / CORS | ✓ | ✓ | ✓ | — | ✓ | — | ✓ |
 | OQ1–5 | ✓ | ✓ | — | ✓ | ref | — | — |
+
+---
+
+## Roadmap 10-loop pass (sentinel: AGENT_LOOP_TICK_ROADMAP10)
+
+| Loop | Focus | Status |
+|------|-------|--------|
+| 1 | apiSpec pagination, state-machines v2, PRD launch, backend vitest, OpenAPI CI | ✅ |
+| 2 | ERD v2-migration section, techspec tests/scripts | ✅ |
+| 3 | TDD v2 RPC + pagination, SRS OQ1 update | ✅ |
+| 4 | dev-readiness matrix refresh | ✅ |
+| 5 | C4 threat model v2 RLS | ✅ |
+| 6 | user-flows v2 pet→pending after submit | ✅ |
+| 7 | README v1 constants + feature pattern | ✅ |
+| 8 | ux-ui-rules feature paths | ✅ |
+| 9 | Full cross-doc consistency pass | ✅ |
+| 10 | Final audit — v2.0 scope explicit | ✅ |
 
 ---
 
@@ -78,12 +98,14 @@
 
 | Gap | Version | Doc reference |
 |-----|---------|---------------|
-| Adoption TOCTOU race | v2 | TDD §4 |
-| RLS anon INSERT | v2 | ERD, NFR-2.6 |
-| Pet status workflow on submit | v2 | state-machines, OQ1 |
-| No pagination (>100 pets) | v2 | SRS NFR-1.4 |
+| Adoption TOCTOU race | v2 (legacy fallback only) | TDD §4; mitigated when RPC deployed |
+| RLS anon INSERT | v2 | ERD § v2 migration, NFR-2.6, C4 |
+| Pet status on submit | v2 RPC optional | state-machines, OQ1 |
+| Admin approve/reject workflow | **v2.0** | PRD §8, state-machines |
+| Auth / login | **v2.0** | PRD non-goals |
 | GET endpoints unrate-limited | v2 | C4 threat model |
-| No `testing.md` | v1.1 | PRD roadmap |
+| No E2E / observability | v1.1+ | PRD roadmap |
+| UI full-catalog fetch | v1 (API pagination exists) | SRS NFR-1.4 |
 
 ---
 

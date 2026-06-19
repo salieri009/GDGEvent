@@ -105,7 +105,21 @@ Pills on `/pets`: **`Very Wiggly`**, **`Expert Napper`**, **`Gentle`**.
 
 - **OR** among selected pills (pet matches any selected tag)
 - **AND** with search text
-- Must match [ERD seed tags](../architecture/erd.md)
+- Must match [ERD seed tags](../architecture/erd.md) (subset demo — `cloud` has no pill match)
+- Source: [`features/pets/constants.ts`](../../src/frontend/src/features/pets/constants.ts) (`FILTER_TAGS`)
+
+## Implementation paths (feature pattern)
+
+| Concern | Path |
+|---------|------|
+| Routes | `src/frontend/src/app/routes.tsx` |
+| Loading / empty copy | `src/frontend/src/shared/constants/uiCopy.ts` |
+| Loading UI | `src/frontend/src/shared/ui/LoadingMessage.tsx` |
+| Async load + retry | `src/frontend/src/shared/hooks/useAsyncResource.ts` |
+| Pet list / detail | `src/frontend/src/features/pets/pages/*Page.tsx` |
+| Adopt form | `src/frontend/src/features/adoption/pages/AdoptPage.tsx` |
+| Status badge | `src/frontend/src/features/pets/components/PetStatusBadge.tsx` |
+| Filter logic | `src/frontend/src/features/pets/utils/filterPets.ts` |
 
 ## Related flows
 

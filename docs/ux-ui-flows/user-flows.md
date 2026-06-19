@@ -53,6 +53,10 @@ flowchart TD
   Success --> Wait[3s] --> List[/pets]
 ```
 
+### v2 note (when `v2-migration.sql` applied)
+
+After successful POST, backend RPC sets **`pets.status` → `pending`**. User sees success screen and redirect as today; on return to `/pets`, badge shows **Pending** (no UI change required — badge reads live status from API). See [state-machines](../architecture/state-machines.md).
+
 | HTTP | UX |
 |------|-----|
 | 201 | Success + redirect |

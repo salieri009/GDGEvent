@@ -28,8 +28,8 @@ stateDiagram-v2
 | Event | Pet transition |
 |-------|----------------|
 | Application submitted | `available` → `pending` (RPC `submit_adoption_application`) |
-| Application approved | `pending` → `adopted` (admin v2 — not implemented) |
-| Application rejected | `pending` → `available` (admin v2 — not implemented) |
+| Application approved | `pending` → `adopted` (admin v2 — **implemented** via `/api/admin/applications/:id/review`) |
+| Application rejected | `pending` → `available` (admin v2 — **implemented**) |
 
 BFF calls RPC with `SELECT … FOR UPDATE` semantics inside Postgres. Legacy v1 path (no RPC) leaves pet status unchanged — see fallback in `index.ts`.
 
