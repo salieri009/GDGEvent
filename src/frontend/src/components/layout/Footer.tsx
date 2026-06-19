@@ -18,7 +18,7 @@ export default function Footer() {
       </div>
       <div className="text-right mt-8 md:mt-0">
         <p className="text-[10px] font-bold uppercase text-slate-300 tracking-[0.2em] mb-1">DoodlePaws Rescue Network</p>
-        <p className="font-black italic uppercase text-2xl tracking-tighter">v.2.0.1 - &quot;Geometric Balance&quot;</p>
+        <p className="font-black italic uppercase text-2xl tracking-tighter">DoodlePaws v1.0</p>
       </div>
     </footer>
   );

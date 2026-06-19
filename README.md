@@ -33,10 +33,17 @@ React (Vite) frontend, Express backend (BFF), and Supabase (Postgres).
 
 Endpoints:
 
-- `GET /health`
-- `GET /api/pets`
-- `GET /api/pets/:id`
+- `GET /health` · `GET /health/ready`
+- `GET /api/pets` · `GET /api/pets/:id`
 - `POST /api/adoption-applications`
+
+Quality checks (repo root):
+
+```bash
+npm run lint && npm run lint:api
+npm test
+npm run validate:openapi
+```
 
 ## Run locally
 

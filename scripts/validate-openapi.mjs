@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Minimal OpenAPI sanity check (v1.1 CI gate). */
+/** Sanity-check OpenAPI file presence and version. */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
