@@ -103,6 +103,7 @@ app.post('/api/adoption-applications', rateLimit, async (req, res) => {
     if (msg.includes('invalid_payload')) {
       return res.status(400).json({ error: 'Invalid payload' });
     }
+    // Fallback when v2 RPC not migrated — legacy path
     if (msg.includes('Could not find the function') || error.code === 'PGRST202') {
       const { data: pet, error: petError } = await supabaseAdmin
         .from('pets')

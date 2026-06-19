@@ -1,43 +1,39 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Doggie Doodles
 
-# Doggie Doodles (Frontend + Backend)
+[![Node.js 22+](https://img.shields.io/badge/node-22+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-React (Vite) frontend, Express backend (BFF), and Supabase (Postgres).
+Browse adoptable dogs and submit an application. UI brand: **DoodlePaws**. Stack: React (Vite) → Express BFF → Supabase.
 
-## Repository layout
+## Quick start
 
-```text
-.
-├── docker-compose.yml      # web (nginx) + api
-├── src/
-│   ├── frontend/           # Vite + React app
-│   │   ├── src/            # UI source
-│   │   ├── nginx/          # reverse proxy config (Docker)
-│   │   ├── Dockerfile
-│   │   ├── package.json
-│   │   └── vite.config.ts
-│   └── backend/            # Express API
-│       ├── src/
-│       ├── supabase/       # SQL schema + seed
-│       ├── Dockerfile
-│       └── package.json
-└── .env.example
+1. Copy `.env.example` → `.env` and set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
+2. Run `src/backend/supabase/schema.sql` in the Supabase SQL editor.
+3. From repo root:
+
+```bash
+npm install --prefix src/backend && npm install --prefix src/frontend
+npm run dev:api   # :4000
+npm run dev       # :3000
 ```
 
-## Architecture
+Docker: `docker compose up --build` → web `:8080`, API `:4000`.
 
-- Browser → **frontend** (`/api/*` proxied to **backend** in dev/Docker)
-- Backend → Supabase with **service role** key (keep off the client)
+## API
 
-Endpoints:
+| Method | Path |
+|--------|------|
+| GET | `/health`, `/health/ready` |
+| GET | `/api/pets`, `/api/pets/:id` |
+| POST | `/api/adoption-applications` |
 
-- `GET /health` · `GET /health/ready`
-- `GET /api/pets` · `GET /api/pets/:id`
-- `POST /api/adoption-applications`
+Optional: `GET /api/pets?limit=&offset=` (max 100). v2 atomic adoption: `src/backend/supabase/v2-migration.sql`.
 
-Quality checks (repo root):
+## Scripts (repo root)
 
 ```bash
 npm run lint && npm run lint:api
@@ -45,87 +41,14 @@ npm test
 npm run validate:openapi
 ```
 
-## Run locally
+## Layout
 
-**Prerequisites:** Node.js 22+ (or match Docker images)
-
-### 1) Environment
-
-From the repo root, copy `.env.example` to `.env` or `.env.local` and set:
-
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-
-Optional for the Vite dev server:
-
-- `VITE_API_PROXY_TARGET` (default `http://localhost:4000`)
-
-### 2) Backend
-
-```bash
-cd src/backend
-npm install
-npm run dev
+```text
+src/frontend/   Vite + React (feature folders)
+src/backend/    Express API + supabase/schema.sql
+docs/           PRD, SRS, OpenAPI, architecture, UX flows
 ```
-
-API listens on `http://localhost:4000`.
-
-### 3) Frontend
-
-In another terminal:
-
-```bash
-cd src/frontend
-npm install
-npm run dev
-```
-
-App is on `http://localhost:3000`. Vite proxies `/api` and `/health` to the backend.
-
-### Shortcut scripts (repo root)
-
-```bash
-npm install --prefix src/frontend
-npm install --prefix src/backend
-npm run dev:api    # backend
-npm run dev        # frontend
-```
-
-## Run with Docker
-
-Create a `.env` in the repo root with real Supabase values, then:
-
-```bash
-docker compose up --build
-```
-
-- Web (static + `/api` proxy): `http://localhost:8080`
-- API (direct): `http://localhost:4000`
-
-## Database
-
-Apply `src/backend/supabase/schema.sql` in the Supabase SQL editor to create tables, RLS policies, and seed pets.
-
-### Error: `Could not find the table 'public.pets' in the schema cache`
-
-That message comes from PostgREST (Supabase API), not from Express routing. It means the Postgres database behind `SUPABASE_URL` does **not** have `public.pets` yet (or Cloud Run is pointed at the wrong Supabase project).
-
-1. In Supabase Dashboard → **SQL** → paste and run `src/backend/supabase/schema.sql`.
-2. In Google Cloud Run → service **Environment variables** → confirm `SUPABASE_URL` is that project’s URL (Settings → API) and `SUPABASE_SERVICE_ROLE_KEY` is from the same project.
-3. Redeploy if you changed env vars, then `GET /api/pets` again.
 
 ## Documentation
 
-**Doc pack index**: [docs/README.md](docs/README.md) — terminology, sync rules, v1 constants
-
-| # | Doc |
-|---|-----|
-| 1 | [PRD](docs/PRD.md) |
-| 2 | [SRS](docs/SRS.md) |
-| 3 | [Architecture C4](docs/architecture/c4.md) |
-| 4 | [API — OpenAPI](docs/openapi.yaml) · [Summary](docs/apiSpec.md) |
-| 5 | [ERD](docs/architecture/erd.md) |
-| 6 | [User flows](docs/ux-ui-flows/user-flows.md) |
-| 7 | [TDD](docs/TDD.md) |
-
-Also: [alignment review](docs/dev-readiness-review.md) · [techspec](docs/techspec.md) · [UX rules](docs/ux-ui-flows/ux-ui-rules.md)
+Index: [docs/README.md](docs/README.md) · OpenAPI: [docs/openapi.yaml](docs/openapi.yaml)
