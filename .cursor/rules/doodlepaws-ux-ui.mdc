@@ -1,0 +1,43 @@
+---
+description: DoodlePaws UX/UI design tokens and component patterns
+globs: src/frontend/**/*.{tsx,css}
+alwaysApply: false
+---
+
+# DoodlePaws UX/UI
+
+## Design tokens
+
+Use Tailwind theme tokens from `src/frontend/src/index.css`:
+
+- `primary` (#FFB347), `secondary` (#B4E1FF), `surface`, `on-surface`, `slate-border`
+- Utilities: `shadow-hard`, `rounded-geo`, `pill-badge`
+
+## Typography
+
+- Headlines: uppercase, italic, `font-black`, tight tracking
+- Labels: `text-xs font-black uppercase tracking-[0.2em]`
+
+## Interaction
+
+- Buttons/cards: hard shadow + hover translate + shadow removal
+- Pet card rotation: stable hash from `pet.id` — never `Math.random()`
+
+## Copy
+
+- Use `{pet.name}`, `{pet.quote}`, `{pet.status}` — no hardcoded pet names or fake counts
+- Status badge must match `pet.status` (`available`, `pending`, `adopted`)
+
+## Loading / errors
+
+Every API fetch page needs:
+
+```tsx
+try { ... } catch { setError(...) } finally { setLoading(false) }
+```
+
+Show retry button on error. See `docs/ux-ui-flows/ux-ui-rules.md`.
+
+## Navigation
+
+- Orphan routes (`/about`, `/foster`) are forbidden — use `/#why-doodlepaws` anchor instead

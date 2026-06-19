@@ -1,8 +1,4 @@
 {
-  "name": "Doggie Doodles",
-  "description": "A playful, doodle-style dog adoption platform for finding your perfect 'pathetic' pal.",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "name": "DoodlePaws",
+  "description": "Browse the pack and apply to adopt a dog."
 }

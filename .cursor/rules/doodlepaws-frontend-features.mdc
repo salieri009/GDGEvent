@@ -1,0 +1,32 @@
+---
+description: Frontend feature-folder layout for DoodlePaws
+globs: src/frontend/src/**
+alwaysApply: false
+---
+
+# Frontend Feature Pattern
+
+## Layout
+
+```
+src/frontend/src/
+  app/           # App shell, routes only
+  features/      # Domain modules (home, pets, adoption)
+  shared/        # Cross-feature API client, hooks, UI primitives, types
+  components/    # App shell layout (Header, Footer, Layout)
+```
+
+## Rules
+
+- **Pages live in features**: `features/<name>/pages/*Page.tsx`
+- **Feature API**: `features/<name>/api/` — thin wrappers over `@/shared/api/client`
+- **Shared hooks**: `useAsyncResource` for load/error/retry (NFR-3.2)
+- **No cross-feature imports of pages** — only hooks/utils/api from other features if needed
+- **Pet status UI**: use `@/shared/lib/petStatus` + `PetStatusBadge`
+- **Imports**: `@/` alias → `src/` (not repo root)
+
+## Adding a feature
+
+1. Create `features/<name>/` with `pages/`, optional `api/`, `hooks/`, `components/`
+2. Register route in `app/routes.tsx`
+3. Update SRS/user-flows if new screen behavior

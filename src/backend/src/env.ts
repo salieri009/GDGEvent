@@ -14,5 +14,7 @@ export const env = {
   SUPABASE_URL: requireEnv('SUPABASE_URL'),
   SUPABASE_SERVICE_ROLE_KEY: requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
   CORS_ORIGIN: process.env.CORS_ORIGIN,
+  /** v2 admin operator key — sent as X-Admin-Key header */
+  ADMIN_API_KEY: process.env.ADMIN_API_KEY,
 };
 

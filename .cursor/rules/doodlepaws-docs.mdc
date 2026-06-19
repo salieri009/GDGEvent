@@ -1,0 +1,41 @@
+---
+description: Keep DoodlePaws docs in sync with code changes
+globs: docs/**
+alwaysApply: false
+---
+
+# DoodlePaws Documentation
+
+## Pre-dev core 7 (update together on scope/API/schema change)
+
+| # | Doc |
+|---|-----|
+| 1 | `docs/PRD.md` |
+| 2 | `docs/SRS.md` |
+| 3 | `docs/architecture/c4.md` |
+| 4 | `docs/apiSpec.md` + `docs/openapi.yaml` |
+| 5 | `docs/architecture/erd.md` |
+| 6 | `docs/ux-ui-flows/user-flows.md` |
+| 7 | `docs/TDD.md` |
+
+## Change map
+
+| Change type | Update |
+|-------------|--------|
+| Product scope | PRD, SRS, user-flows |
+| API route / validation | apiSpec, openapi.yaml, SRS, TDD |
+| Schema / RLS / status rules | erd, state-machines, openapi (if DTO changes), TDD |
+| Architecture / deploy | c4, overview |
+| UX screen behavior | user-flows, browse/adopt detail docs, ux-ui-rules |
+
+## Rules
+
+- README `## Documentation` links to docs/README.md
+- OpenAPI and apiSpec must stay aligned
+- Keep mermaid node IDs without spaces
+
+## Source of truth
+
+- Endpoints: `src/backend/src/index.ts`
+- Routes: `src/frontend/src/app/routes.tsx` (entry: `main.tsx` → `app/App.tsx`)
+- Schema: `src/backend/supabase/schema.sql`

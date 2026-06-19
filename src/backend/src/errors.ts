@@ -1,5 +1,6 @@
 import type { Response } from 'express';
 import type { PostgrestError } from '@supabase/supabase-js';
+import { isProduction } from './nodeEnv.js';
 
 /** Map PostgREST errors to HTTP status + JSON body for clients. */
 export function respondSupabaseError(res: Response, error: PostgrestError) {
@@ -15,13 +16,19 @@ export function respondSupabaseError(res: Response, error: PostgrestError) {
     msg.includes('schema cache') ||
     error.code === 'PGRST205'
   ) {
+    if (isProduction()) {
+      return res.status(503).json({ error: 'Service unavailable' });
+    }
+
     return res.status(503).json({
       error: 'Supabase has no public.pets (and related tables) for this project.',
       hint: 'Open the Supabase project that matches SUPABASE_URL on Cloud Run, run SQL from src/backend/supabase/schema.sql in the SQL Editor, then retry. Confirm SUPABASE_URL points at that same project.',
-      code: error.code,
+      code: error.code ?? '',
       details: msg,
     });
   }
 
-  return res.status(500).json({ error: msg, code: error.code });
+  // eslint-disable-next-line no-console
+  console.error('[supabase]', error.code, msg);
+  return res.status(500).json({ error: 'Internal server error' });
 }
